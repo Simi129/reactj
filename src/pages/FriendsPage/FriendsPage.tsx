@@ -28,8 +28,13 @@ export const FriendsPage: FC = () => {
         setIsLoading(true);
         const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`);
         console.log('Referrals response:', response.data);
-        setReferrals(response.data);
-        setError(null);
+        
+        if (Array.isArray(response.data)) {
+          setReferrals(response.data);
+        } else {
+          console.error('Received non-array data:', response.data);
+          setError('Received invalid data format from server.');
+        }
       } catch (err) {
         console.error('Error fetching referrals:', err);
         setError('Failed to load referrals. Please try again later.');
@@ -48,7 +53,7 @@ export const FriendsPage: FC = () => {
   }, [fetchReferrals]);
 
   const shareInviteLink = () => {
-    const botUsername = 'testonefornew_bot';
+    const botUsername = 'testonefornew_bot'; // Замените на имя вашего бота
     
     if (lp.initData?.user?.id) {
       const userId = lp.initData.user.id;
@@ -62,6 +67,11 @@ export const FriendsPage: FC = () => {
   };
 
   const renderReferralsList = () => {
+    if (!Array.isArray(referrals)) {
+      console.error('referrals is not an array:', referrals);
+      return <p>Error: Invalid referrals data</p>;
+    }
+    
     return referrals.length > 0 ? (
       <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
         {referrals.map(referral => (
@@ -84,7 +94,7 @@ export const FriendsPage: FC = () => {
       <Button onClick={shareInviteLink} style={{ marginBottom: '20px' }}>Invite Friends</Button>
 
       <div style={{ marginBottom: '20px' }}>
-        <h3>{referrals.length} Friends</h3>
+        <h3>{Array.isArray(referrals) ? referrals.length : 0} Friends</h3>
       </div>
 
       {isLoading ? (
