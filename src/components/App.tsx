@@ -70,7 +70,7 @@ export const App: FC = () => {
   }, [lp.initDataRaw, isDataSaved]);
 
   const processReferral = useCallback(async () => {
-    if (lp.startParam && lp.initDataRaw && !isReferralHandled) {
+    if (lp.startParam && lp.startParam.startsWith('invite_') && lp.initDataRaw && !isReferralHandled) {
       console.log('Processing referral. StartParam:', lp.startParam, 'InitDataRaw:', lp.initDataRaw);
       try {
         await handleReferral(lp.initDataRaw);

@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import { Button, Image } from '@telegram-apps/telegram-ui';
 import { NavigationBar } from '@/components/NavigationBar/NavigationBar';
 import { initUtils, useLaunchParams } from '@telegram-apps/sdk-react';
@@ -12,7 +12,7 @@ interface Referral {
 }
 
 const utils = initUtils();
-const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
+const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app';
 
 export const FriendsPage: FC = () => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -20,42 +20,58 @@ export const FriendsPage: FC = () => {
   const [error, setError] = useState<string | null>(null);
   const lp = useLaunchParams();
 
-  useEffect(() => {
-    const fetchReferrals = async () => {
-      if (lp.initData?.user?.id) {
-        try {
-          setIsLoading(true);
-          const response = await axios.get(`${BACKEND_URL}/referrals/${lp.initData.user.id}`);
-          
-          // Проверяем, что полученные данные являются массивом
-          if (Array.isArray(response.data)) {
-            setReferrals(response.data);
+  const fetchReferrals = useCallback(async () => {
+    if (lp.initData?.user?.id) {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${BACKEND_URL}/referrals/${lp.initData.user.id}`);
+        console.log('Referrals response:', response.data);
+        
+        if (Array.isArray(response.data)) {
+          setReferrals(response.data);
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          const referralsArray = Object.values(response.data).find(Array.isArray);
+          if (referralsArray) {
+            setReferrals(referralsArray);
           } else {
-            console.error('Received non-array data:', response.data);
-            setError('Received invalid data format from server.');
+            console.error('Unexpected data structure:', response.data);
+            setError('Received unexpected data format from server.');
           }
-        } catch (err) {
-          console.error('Error fetching referrals:', err);
-          setError('Failed to load referrals. Please try again later.');
-        } finally {
-          setIsLoading(false);
+        } else {
+          console.error('Received invalid data:', response.data);
+          setError('Received invalid data format from server.');
         }
-      } else {
-        setError('User ID not available');
+      } catch (err) {
+        console.error('Error fetching referrals:', err);
+        setError('Failed to load referrals. Please try again later.');
+      } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchReferrals();
+    } else {
+      console.warn('User ID not available');
+      setError('User ID not available');
+      setIsLoading(false);
+    }
   }, [lp.initData?.user?.id]);
 
+  useEffect(() => {
+    console.log('FriendsPage mounted');
+    console.log('Launch params:', lp);
+    console.log('User ID:', lp.initData?.user?.id);
+    fetchReferrals();
+  }, [fetchReferrals, lp]);
+
+  useEffect(() => {
+    console.log('Current referrals state:', referrals);
+  }, [referrals]);
+
   const shareInviteLink = () => {
-    const botUsername = 'testonefornew_bot'; // Замените на имя вашего бота
-    const appName = 'BallCry'; // Замените на название вашего приложения
+    const botUsername = 'testonefornew_bot';
     
     if (lp.initData?.user?.id) {
       const userId = lp.initData.user.id;
-      const inviteLink = `https://t.me/${botUsername}/${appName}?startapp=invite_${userId}`;
+      const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
+      console.log('Generated invite link:', inviteLink);
       utils.shareURL(inviteLink, 'Join me in BallCry and get more rewards!');
     } else {
       console.error('User ID not available');
