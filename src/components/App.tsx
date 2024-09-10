@@ -38,7 +38,7 @@ const saveTelegramUser = async (initData: string) => {
 const handleReferral = async (initData: string) => {
   console.log('Handling referral with initData:', initData);
   try {
-    const response = await axios.post(`${BACKEND_URL}/referrals`, { initData });
+    const response = await axios.post(`${BACKEND_URL}/referrals/save-referral`, { initData });
     console.log('Referral handled successfully:', response.data);
     return response.data;
   } catch (error) {
