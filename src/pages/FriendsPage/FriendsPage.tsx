@@ -26,8 +26,14 @@ export const FriendsPage: FC = () => {
         try {
           setIsLoading(true);
           const response = await axios.get(`${BACKEND_URL}/referrals/${lp.initData.user.id}`);
-          setReferrals(response.data);
-          setError(null);
+          
+          // Проверяем, что полученные данные являются массивом
+          if (Array.isArray(response.data)) {
+            setReferrals(response.data);
+          } else {
+            console.error('Received non-array data:', response.data);
+            setError('Received invalid data format from server.');
+          }
         } catch (err) {
           console.error('Error fetching referrals:', err);
           setError('Failed to load referrals. Please try again later.');
@@ -57,6 +63,23 @@ export const FriendsPage: FC = () => {
     }
   };
 
+  const renderReferralsList = () => {
+    if (!Array.isArray(referrals)) {
+      console.error('referrals is not an array:', referrals);
+      return <p>Error: Invalid referrals data</p>;
+    }
+    
+    return referrals.length > 0 ? (
+      <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
+        {referrals.map(referral => (
+          <li key={referral.id}>{referral.name}</li>
+        ))}
+      </ol>
+    ) : (
+      <p>No referrals yet. Invite your friends!</p>
+    );
+  };
+
   return (
     <div style={{ padding: '20px', textAlign: 'center', paddingBottom: '60px' }}>
       <h2>Invite Friends and get more BallCry</h2>
@@ -68,21 +91,15 @@ export const FriendsPage: FC = () => {
       <Button onClick={shareInviteLink} style={{ marginBottom: '20px' }}>Invite Friends</Button>
 
       <div style={{ marginBottom: '20px' }}>
-        <h3>{referrals.length} Friends</h3>
+        <h3>{Array.isArray(referrals) ? referrals.length : 0} Friends</h3>
       </div>
 
       {isLoading ? (
         <p>Loading referrals...</p>
       ) : error ? (
         <p style={{ color: 'red' }}>{error}</p>
-      ) : referrals.length > 0 ? (
-        <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
-          {referrals.map(referral => (
-            <li key={referral.id}>{referral.name}</li>
-          ))}
-        </ol>
       ) : (
-        <p>No referrals yet. Invite your friends!</p>
+        renderReferralsList()
       )}
 
       <NavigationBar />
