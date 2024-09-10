@@ -10,7 +10,7 @@ import {
   useViewport,
 } from '@telegram-apps/sdk-react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { type FC, useEffect, useMemo, useState } from 'react';
+import { type FC, useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Navigate,
   Route,
@@ -21,7 +21,7 @@ import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
+const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app';
 
 const saveTelegramUser = async (initData: string) => {
   console.log('Attempting to save user data:', initData);
@@ -35,10 +35,10 @@ const saveTelegramUser = async (initData: string) => {
   }
 };
 
-const handleReferral = async (referrerId: string, userId: string) => {
-  console.log('Handling referral:', { referrerId, userId });
+const handleReferral = async (referrerId: string, referredId: string) => {
+  console.log('Handling referral:', { referrerId, referredId });
   try {
-    const response = await axios.post(`${BACKEND_URL}/handle-referral`, { referrerId, userId });
+    const response = await axios.post(`${BACKEND_URL}/referrals`, { referrerId, referredId });
     console.log('Referral handled successfully:', response.data);
     return response.data;
   } catch (error) {
@@ -55,45 +55,45 @@ export const App: FC = () => {
   const [isDataSaved, setIsDataSaved] = useState(false);
   const [isReferralHandled, setIsReferralHandled] = useState(false);
 
-  useEffect(() => {
-    const saveData = async () => {
-      if (lp.initDataRaw && !isDataSaved) {
-        try {
-          console.log('InitDataRaw received:', lp.initDataRaw);
-          await saveTelegramUser(lp.initDataRaw);
-          setIsDataSaved(true);
-          console.log('User data saved successfully');
-        } catch (error) {
-          console.error('Error saving user data:', error);
-        }
-      } else if (!lp.initDataRaw) {
-        console.warn('initDataRaw is empty or undefined');
+  const saveUserData = useCallback(async () => {
+    if (lp.initDataRaw && !isDataSaved) {
+      try {
+        console.log('InitDataRaw received:', lp.initDataRaw);
+        await saveTelegramUser(lp.initDataRaw);
+        setIsDataSaved(true);
+        console.log('User data saved successfully');
+      } catch (error) {
+        console.error('Error saving user data:', error);
       }
-    };
-
-    saveData();
+    } else if (!lp.initDataRaw) {
+      console.warn('initDataRaw is empty or undefined');
+    }
   }, [lp.initDataRaw, isDataSaved]);
 
-  useEffect(() => {
-    const processReferral = async () => {
-      if (lp.startParam && lp.initData?.user?.id && !isReferralHandled) {
-        const referralMatch = lp.startParam.match(/^invite_(\d+)$/);
-        if (referralMatch) {
-          const referrerId = referralMatch[1];
-          const userId = lp.initData.user.id.toString();
-          try {
-            await handleReferral(referrerId, userId);
-            setIsReferralHandled(true);
-            console.log('Referral processed successfully');
-          } catch (error) {
-            console.error('Error processing referral:', error);
-          }
+  const processReferral = useCallback(async () => {
+    if (lp.startParam && lp.initData?.user?.id && !isReferralHandled) {
+      const referralMatch = lp.startParam.match(/^invite_(\d+)$/);
+      if (referralMatch) {
+        const referrerId = referralMatch[1];
+        const referredId = lp.initData.user.id.toString();
+        try {
+          await handleReferral(referrerId, referredId);
+          setIsReferralHandled(true);
+          console.log('Referral processed successfully');
+        } catch (error) {
+          console.error('Error processing referral:', error);
         }
       }
-    };
-
-    processReferral();
+    }
   }, [lp.startParam, lp.initData, isReferralHandled]);
+
+  useEffect(() => {
+    saveUserData();
+  }, [saveUserData]);
+
+  useEffect(() => {
+    processReferral();
+  }, [processReferral]);
 
   useEffect(() => {
     return bindMiniAppCSSVars(miniApp, themeParams);
