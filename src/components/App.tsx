@@ -10,7 +10,7 @@ import {
   useViewport,
 } from '@telegram-apps/sdk-react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
-import { type FC, useEffect, useMemo, useState, useCallback } from 'react';
+import { FC, useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Navigate,
   Route,
@@ -21,7 +21,7 @@ import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app';
+const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
 
 const saveTelegramUser = async (initData: string) => {
   console.log('Attempting to save user data:', initData);
@@ -35,11 +35,10 @@ const saveTelegramUser = async (initData: string) => {
   }
 };
 
-const handleReferral = async (referrerId: string, referredId: string) => {
-  console.log('handleReferral called with:', { referrerId, referredId });
+const handleReferral = async (initData: string) => {
+  console.log('Handling referral with initData:', initData);
   try {
-    console.log('Sending POST request to:', `${BACKEND_URL}/referrals`);
-    const response = await axios.post(`${BACKEND_URL}/referrals`, { referrerId, referredId });
+    const response = await axios.post(`${BACKEND_URL}/referrals`, { initData });
     console.log('Referral handled successfully:', response.data);
     return response.data;
   } catch (error) {
@@ -76,37 +75,19 @@ export const App: FC = () => {
   }, [lp.initDataRaw, isDataSaved]);
 
   const processReferral = useCallback(async () => {
-  console.log('processReferral called');
-  console.log('startParam:', lp.startParam);
-  console.log('initData:', lp.initData);
-
-  if (lp.startParam && lp.initData?.user?.id && !isReferralHandled) {
-    console.log('Conditions met for processing referral');
-    
-    const referralMatch = lp.startParam.match(/^invite_(\d+)$/);
-    if (referralMatch) {
-      const referrerId = referralMatch[1];
-      const referredId = lp.initData.user.id.toString();
-      console.log('Referral data:', { referrerId, referredId });
-      
+    if (lp.startParam && lp.startParam.startsWith('invite_') && lp.initDataRaw && !isReferralHandled) {
+      console.log('Processing referral with startParam:', lp.startParam);
       try {
-        console.log('Attempting to handle referral');
-        const response = await handleReferral(referrerId, referredId);
+        await handleReferral(lp.initDataRaw);
         setIsReferralHandled(true);
-        console.log('Referral processed successfully:', response);
+        console.log('Referral processed successfully');
       } catch (error) {
         console.error('Error processing referral:', error);
-        if (axios.isAxiosError(error)) {
-          console.error('Response data:', error.response?.data);
-        }
       }
     } else {
-      console.warn('Invalid start param format:', lp.startParam);
+      console.log('No valid referral data to process');
     }
-  } else {
-    console.log('Conditions not met for processing referral');
-  }
-}, [lp.startParam, lp.initData, isReferralHandled]);
+  }, [lp.startParam, lp.initDataRaw, isReferralHandled]);
 
   useEffect(() => {
     saveUserData();
