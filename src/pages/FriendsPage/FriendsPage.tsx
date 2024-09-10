@@ -50,7 +50,7 @@ export const FriendsPage: FC = () => {
   }, [lp.initData?.user?.id]);
 
   const shareInviteLink = () => {
-    const botUsername = 'testonefornew'; // Замените на имя вашего бота
+    const botUsername = 'testonefornew_bot'; // Замените на имя вашего бота
     const appName = 'BallCry'; // Замените на название вашего приложения
     
     if (lp.initData?.user?.id) {
