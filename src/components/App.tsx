@@ -36,13 +36,18 @@ const saveTelegramUser = async (initData: string) => {
 };
 
 const handleReferral = async (referrerId: string, referredId: string) => {
-  console.log('Handling referral:', { referrerId, referredId });
+  console.log('handleReferral called with:', { referrerId, referredId });
   try {
+    console.log('Sending POST request to:', `${BACKEND_URL}/referrals`);
     const response = await axios.post(`${BACKEND_URL}/referrals`, { referrerId, referredId });
     console.log('Referral handled successfully:', response.data);
     return response.data;
   } catch (error) {
     console.error('Failed to handle referral:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Response status:', error.response?.status);
+      console.error('Response data:', error.response?.data);
+    }
     throw error;
   }
 };
@@ -71,21 +76,37 @@ export const App: FC = () => {
   }, [lp.initDataRaw, isDataSaved]);
 
   const processReferral = useCallback(async () => {
-    if (lp.startParam && lp.initData?.user?.id && !isReferralHandled) {
-      const referralMatch = lp.startParam.match(/^invite_(\d+)$/);
-      if (referralMatch) {
-        const referrerId = referralMatch[1];
-        const referredId = lp.initData.user.id.toString();
-        try {
-          await handleReferral(referrerId, referredId);
-          setIsReferralHandled(true);
-          console.log('Referral processed successfully');
-        } catch (error) {
-          console.error('Error processing referral:', error);
+  console.log('processReferral called');
+  console.log('startParam:', lp.startParam);
+  console.log('initData:', lp.initData);
+
+  if (lp.startParam && lp.initData?.user?.id && !isReferralHandled) {
+    console.log('Conditions met for processing referral');
+    
+    const referralMatch = lp.startParam.match(/^invite_(\d+)$/);
+    if (referralMatch) {
+      const referrerId = referralMatch[1];
+      const referredId = lp.initData.user.id.toString();
+      console.log('Referral data:', { referrerId, referredId });
+      
+      try {
+        console.log('Attempting to handle referral');
+        const response = await handleReferral(referrerId, referredId);
+        setIsReferralHandled(true);
+        console.log('Referral processed successfully:', response);
+      } catch (error) {
+        console.error('Error processing referral:', error);
+        if (axios.isAxiosError(error)) {
+          console.error('Response data:', error.response?.data);
         }
       }
+    } else {
+      console.warn('Invalid start param format:', lp.startParam);
     }
-  }, [lp.startParam, lp.initData, isReferralHandled]);
+  } else {
+    console.log('Conditions not met for processing referral');
+  }
+}, [lp.startParam, lp.initData, isReferralHandled]);
 
   useEffect(() => {
     saveUserData();
