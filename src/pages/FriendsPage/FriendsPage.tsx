@@ -7,10 +7,10 @@ import axios from 'axios';
 import ball1 from '../../../assets/ball1.png';
 
 interface Referral {
-  id: number;
-  username: string;
-  firstName: string;
-  lastName: string;
+  id?: number;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 const utils = initUtils();
@@ -37,23 +37,36 @@ export const FriendsPage: FC = () => {
       console.log('Referrals response:', response);
       console.log('Referrals data:', response.data);
 
-      if (!response.data) {
-        throw new Error('No data received from server');
-      }
+      let processedReferrals: Referral[] = [];
 
       if (Array.isArray(response.data)) {
-        setReferrals(response.data);
+        processedReferrals = response.data;
       } else if (typeof response.data === 'object' && response.data !== null) {
-        // Попробуем найти массив внутри объекта
         const possibleArray = Object.values(response.data).find(Array.isArray);
         if (possibleArray) {
-          setReferrals(possibleArray);
+          processedReferrals = possibleArray;
         } else {
-          throw new Error('Received data is not an array and does not contain an array');
+          processedReferrals = Object.values(response.data);
         }
-      } else {
-        throw new Error('Received data is not an array or object');
+      } else if (typeof response.data === 'string') {
+        try {
+          const parsedData = JSON.parse(response.data);
+          if (Array.isArray(parsedData)) {
+            processedReferrals = parsedData;
+          } else if (typeof parsedData === 'object' && parsedData !== null) {
+            processedReferrals = Object.values(parsedData);
+          }
+        } catch (e) {
+          console.error('Failed to parse response data as JSON:', e);
+        }
       }
+
+      if (processedReferrals.length === 0) {
+        console.warn('No referrals found in the response');
+      }
+
+      setReferrals(processedReferrals);
+      setError(null);
     } catch (err) {
       console.error('Error fetching referrals:', err);
       setError('Failed to load referrals. Please try again later.');
@@ -91,8 +104,14 @@ export const FriendsPage: FC = () => {
       <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
         {referrals.map((referral, index) => (
           <li key={referral.id || index}>
-            {referral.firstName || ''} {referral.lastName || ''} 
-            {referral.username ? `(@${referral.username})` : ''}
+            {typeof referral === 'object' && referral !== null ? (
+              <>
+                {referral.firstName || ''} {referral.lastName || ''} 
+                {referral.username ? `(@${referral.username})` : ''}
+              </>
+            ) : (
+              String(referral)
+            )}
           </li>
         ))}
       </ol>
@@ -129,3 +148,5 @@ export const FriendsPage: FC = () => {
     </div>
   );
 };
+
+export default FriendsPage;
