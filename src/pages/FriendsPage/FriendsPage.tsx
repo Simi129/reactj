@@ -75,12 +75,14 @@ export const FriendsPage: FC = () => {
         <p>Loading referrals...</p>
       ) : error ? (
         <p style={{ color: 'red' }}>{error}</p>
-      ) : (
+      ) : referrals.length > 0 ? (
         <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
           {referrals.map(referral => (
             <li key={referral.id}>{referral.name}</li>
           ))}
         </ol>
+      ) : (
+        <p>No referrals yet. Invite your friends!</p>
       )}
 
       <NavigationBar />
