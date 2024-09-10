@@ -23,27 +23,41 @@ export const FriendsPage: FC = () => {
   const lp = useLaunchParams();
 
   const fetchReferrals = useCallback(async () => {
-    if (lp.initData?.user?.id) {
-      try {
-        setIsLoading(true);
-        const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`);
-        console.log('Referrals response:', response.data);
-        
-        if (Array.isArray(response.data)) {
-          setReferrals(response.data);
-        } else {
-          console.error('Received non-array data:', response.data);
-          setError('Received invalid data format from server.');
-        }
-      } catch (err) {
-        console.error('Error fetching referrals:', err);
-        setError('Failed to load referrals. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+    console.log('Fetching referrals...');
+    if (!lp.initData?.user?.id) {
       console.warn('User ID not available');
       setError('User ID not available');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`);
+      console.log('Referrals response:', response);
+      console.log('Referrals data:', response.data);
+
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      if (Array.isArray(response.data)) {
+        setReferrals(response.data);
+      } else if (typeof response.data === 'object' && response.data !== null) {
+        // Попробуем найти массив внутри объекта
+        const possibleArray = Object.values(response.data).find(Array.isArray);
+        if (possibleArray) {
+          setReferrals(possibleArray);
+        } else {
+          throw new Error('Received data is not an array and does not contain an array');
+        }
+      } else {
+        throw new Error('Received data is not an array or object');
+      }
+    } catch (err) {
+      console.error('Error fetching referrals:', err);
+      setError('Failed to load referrals. Please try again later.');
+    } finally {
       setIsLoading(false);
     }
   }, [lp.initData?.user?.id]);
@@ -67,6 +81,7 @@ export const FriendsPage: FC = () => {
   };
 
   const renderReferralsList = () => {
+    console.log('Rendering referrals list. Referrals:', referrals);
     if (!Array.isArray(referrals)) {
       console.error('referrals is not an array:', referrals);
       return <p>Error: Invalid referrals data</p>;
@@ -74,14 +89,19 @@ export const FriendsPage: FC = () => {
     
     return referrals.length > 0 ? (
       <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
-        {referrals.map(referral => (
-          <li key={referral.id}>{referral.firstName} {referral.lastName} (@{referral.username})</li>
+        {referrals.map((referral, index) => (
+          <li key={referral.id || index}>
+            {referral.firstName || ''} {referral.lastName || ''} 
+            {referral.username ? `(@${referral.username})` : ''}
+          </li>
         ))}
       </ol>
     ) : (
       <p>No referrals yet. Invite your friends!</p>
     );
   };
+
+  console.log('Rendering FriendsPage. State:', { isLoading, error, referralsLength: referrals.length });
 
   return (
     <div style={{ padding: '20px', textAlign: 'center', paddingBottom: '60px' }}>
@@ -94,7 +114,7 @@ export const FriendsPage: FC = () => {
       <Button onClick={shareInviteLink} style={{ marginBottom: '20px' }}>Invite Friends</Button>
 
       <div style={{ marginBottom: '20px' }}>
-        <h3>{Array.isArray(referrals) ? referrals.length : 0} Friends</h3>
+        <h3>{referrals.length} Friends</h3>
       </div>
 
       {isLoading ? (
