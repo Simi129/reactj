@@ -11,17 +11,12 @@ import {
 } from '@telegram-apps/sdk-react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { FC, useEffect, useMemo, useState, useCallback } from 'react';
-import {
-  Navigate,
-  Route,
-  Router,
-  Routes,
-} from 'react-router-dom';
+import { Navigate, Route, Router, Routes } from 'react-router-dom';
 import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
+const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app';
 
 const saveTelegramUser = async (initData: string) => {
   console.log('Attempting to save user data:', initData);
@@ -38,7 +33,7 @@ const saveTelegramUser = async (initData: string) => {
 const handleReferral = async (initData: string) => {
   console.log('Handling referral with initData:', initData);
   try {
-    const response = await axios.post(`${BACKEND_URL}/referrals/save-referral`, { initData });
+    const response = await axios.post(`${BACKEND_URL}/referrals`, { initData });
     console.log('Referral handled successfully:', response.data);
     return response.data;
   } catch (error) {
@@ -75,8 +70,8 @@ export const App: FC = () => {
   }, [lp.initDataRaw, isDataSaved]);
 
   const processReferral = useCallback(async () => {
-    if (lp.startParam && lp.startParam.startsWith('invite_') && lp.initDataRaw && !isReferralHandled) {
-      console.log('Processing referral with startParam:', lp.startParam);
+    if (lp.startParam && lp.initDataRaw && !isReferralHandled) {
+      console.log('Processing referral. StartParam:', lp.startParam, 'InitDataRaw:', lp.initDataRaw);
       try {
         await handleReferral(lp.initDataRaw);
         setIsReferralHandled(true);
@@ -85,7 +80,7 @@ export const App: FC = () => {
         console.error('Error processing referral:', error);
       }
     } else {
-      console.log('No valid referral data to process');
+      console.log('No valid referral data to process or already handled. StartParam:', lp.startParam);
     }
   }, [lp.startParam, lp.initDataRaw, isReferralHandled]);
 
