@@ -2,29 +2,46 @@ import { FC, useState, useEffect } from 'react';
 import { Button, Image } from '@telegram-apps/telegram-ui';
 import { NavigationBar } from '@/components/NavigationBar/NavigationBar';
 import { initUtils, useLaunchParams } from '@telegram-apps/sdk-react';
+import axios from 'axios';
 
 import ball1 from '../../../assets/ball1.png';
 
-interface Friend {
+interface Referral {
   id: number;
   name: string;
 }
 
 const utils = initUtils();
+const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
 
 export const FriendsPage: FC = () => {
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const lp = useLaunchParams();
-  
+
   useEffect(() => {
-    // Здесь должна быть логика загрузки списка друзей
-    // Для примера используем моковые данные
-    setFriends([
-      { id: 1, name: 'Друг 1' },
-      { id: 2, name: 'Друг 2' },
-      { id: 3, name: 'Друг 3' },
-    ]);
-  }, []);
+    const fetchReferrals = async () => {
+      if (lp.initData?.user?.id) {
+        try {
+          setIsLoading(true);
+          const response = await axios.get(`${BACKEND_URL}/referrals/${lp.initData.user.id}`);
+          setReferrals(response.data);
+          setError(null);
+        } catch (err) {
+          console.error('Error fetching referrals:', err);
+          setError('Failed to load referrals. Please try again later.');
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setError('User ID not available');
+        setIsLoading(false);
+      }
+    };
+
+    fetchReferrals();
+  }, [lp.initData?.user?.id]);
 
   const shareInviteLink = () => {
     const botUsername = 'testonefornew'; // Замените на имя вашего бота
@@ -36,7 +53,7 @@ export const FriendsPage: FC = () => {
       utils.shareURL(inviteLink, 'Join me in BallCry and get more rewards!');
     } else {
       console.error('User ID not available');
-      // Можно показать сообщение пользователю о невозможности создать ссылку
+      setError('Unable to create invite link. Please try again later.');
     }
   };
 
@@ -51,14 +68,20 @@ export const FriendsPage: FC = () => {
       <Button onClick={shareInviteLink} style={{ marginBottom: '20px' }}>Invite Friends</Button>
 
       <div style={{ marginBottom: '20px' }}>
-        <h3>{friends.length} Friends</h3>
+        <h3>{referrals.length} Friends</h3>
       </div>
 
-      <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
-        {friends.map(friend => (
-          <li key={friend.id}>{friend.name}</li>
-        ))}
-      </ol>
+      {isLoading ? (
+        <p>Loading referrals...</p>
+      ) : error ? (
+        <p style={{ color: 'red' }}>{error}</p>
+      ) : (
+        <ol style={{ textAlign: 'left', paddingLeft: '20px' }}>
+          {referrals.map(referral => (
+            <li key={referral.id}>{referral.name}</li>
+          ))}
+        </ol>
+      )}
 
       <NavigationBar />
     </div>
