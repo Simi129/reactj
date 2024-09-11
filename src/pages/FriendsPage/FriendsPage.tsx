@@ -36,32 +36,42 @@ export const FriendsPage: FC = () => {
   };
 
   const fetchReferrals = useCallback(async () => {
-    console.log('Fetching referrals...');
-    if (!lp.initData?.user?.id) {
-      console.warn('User ID not available');
-      showPopup('Error', 'User ID not available');
-      setIsLoading(false);
-      return;
-    }
+  console.log('Fetching referrals...');
+  if (!lp.initData?.user?.id) {
+    console.warn('User ID not available');
+    showPopup('Error', 'User ID not available');
+    setIsLoading(false);
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`);
-      console.log('Referrals response:', response);
+  try {
+    setIsLoading(true);
+    const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`, {
+      headers: {
+        'Content-Type': 'application/json',
+        // Добавьте другие необходимые заголовки
+      }
+    });
+    console.log('Referrals response:', response);
 
+    if (response.headers['content-type'].includes('application/json')) {
       if (Array.isArray(response.data)) {
         setReferrals(response.data);
       } else {
         console.error('Unexpected response format:', response.data);
         showPopup('Error', 'Unexpected data format received');
       }
-    } catch (err) {
-      console.error('Error fetching referrals:', err);
-      showPopup('Error', 'Failed to load referrals. Please try again later.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      console.error('Received non-JSON response:', response.data);
+      showPopup('Error', 'Received unexpected response from server');
     }
-  }, [lp.initData?.user?.id]);
+  } catch (err) {
+    console.error('Error fetching referrals:', err);
+    showPopup('Error', 'Failed to load referrals. Please try again later.');
+  } finally {
+    setIsLoading(false);
+  }
+}, [lp.initData?.user?.id]);
 
   useEffect(() => {
     fetchReferrals();
