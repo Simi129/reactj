@@ -14,7 +14,7 @@ interface Referral {
 }
 
 const utils = initUtils();
-const BACKEND_URL = 'https://20b3-78-84-19-24.ngrok-free.app';
+const BACKEND_URL = 'https://c529-78-84-19-24.ngrok-free.app';
 
 export const FriendsPage: FC = () => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
