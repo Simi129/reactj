@@ -16,7 +16,7 @@ import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://16de7869fedccbceb993e22c1a183ed1.serveo.net';
+const BACKEND_URL = 'https://97670b720800f5461db54c01fd4c9163.serveo.net';
 
 const saveTelegramUser = async (initData: string, startParam: string | undefined | null) => {
   console.log('Attempting to save user data:', initData);
