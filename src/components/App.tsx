@@ -27,6 +27,7 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
   console.log('Attempting to save user data:', initData);
   console.log('Start param:', startParam);
   try {
+    console.log('Sending request to:', `${BACKEND_URL}/users/save-telegram-user`);
     const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { 
       initData, 
       startParam: startParam || null 
@@ -36,9 +37,17 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
       }
     });
     
+    console.log('Response received');
     console.log('Response status:', response.status);
     console.log('Response headers:', response.headers);
+    console.log('Raw response data:', response.data);
     
+    if (typeof response.data === 'string' && response.data.startsWith('<!DOCTYPE')) {
+      console.error('Received HTML instead of JSON:');
+      console.error(response.data.substring(0, 500) + '...'); // Выводим первые 500 символов HTML
+      throw new Error('Received HTML instead of JSON');
+    }
+
     // Попытка распарсить ответ как JSON
     try {
       const jsonData = JSON.parse(JSON.stringify(response.data));
@@ -46,21 +55,21 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
       return jsonData;
     } catch (parseError) {
       console.error('Failed to parse response as JSON:', parseError);
+      console.log('Raw response data type:', typeof response.data);
       console.log('Raw response data:', response.data);
       throw new Error('Invalid JSON response');
     }
   } catch (error) {
     console.error('Error in saveTelegramUser:', error);
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.response?.data);
-      // Попытка распарсить тело ошибки, если оно есть
+      console.error('Axios error:', error.response?.status);
+      console.error('Axios error response:', error.response);
       if (error.response?.data) {
-        try {
-          const errorBody = JSON.parse(JSON.stringify(error.response.data));
-          console.log('Parsed error body:', errorBody);
-        } catch (parseError) {
-          console.error('Failed to parse error body:', parseError);
-          console.log('Raw error body:', error.response.data);
+        if (typeof error.response.data === 'string' && error.response.data.startsWith('<!DOCTYPE')) {
+          console.error('Received HTML in error response:');
+          console.error(error.response.data.substring(0, 500) + '...'); // Выводим первые 500 символов HTML
+        } else {
+          console.log('Raw error response data:', error.response.data);
         }
       }
     }
