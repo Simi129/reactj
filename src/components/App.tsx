@@ -68,6 +68,8 @@ export const App: FC = () => {
   useEffect(() => {
     if (lp.startParam) {
       console.log('Start parameter detected:', lp.startParam);
+    } else {
+      console.log('No start parameter detected');
     }
   }, [lp.startParam]);
 
