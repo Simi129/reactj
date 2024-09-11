@@ -14,14 +14,14 @@ interface Referral {
 }
 
 const utils = initUtils();
-const BACKEND_URL = 'https://97670b720800f5461db54c01fd4c9163.serveo.net';
-const BOT_USERNAME = 'testonefornew_bot';
+const BACKEND_URL = 'https://f6e34b3d33d45de583c886f8a20ae713.serveo.net';
+const BOT_USERNAME = 'testonefornew_bot'; // Замените на имя вашего бота
 
 export const FriendsPage: FC = () => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const lp = useLaunchParams();
-  
+
   const showPopup = useCallback((title: string, message: string) => {
     if (window.Telegram?.WebApp?.showPopup) {
       window.Telegram.WebApp.showPopup({
@@ -53,16 +53,11 @@ export const FriendsPage: FC = () => {
       });
       console.log('Referrals response:', response);
 
-      if (response.headers['content-type'].includes('application/json')) {
-        if (Array.isArray(response.data)) {
-          setReferrals(response.data);
-        } else {
-          console.error('Unexpected response format:', response.data);
-          showPopup('Error', 'Unexpected data format received');
-        }
+      if (Array.isArray(response.data)) {
+        setReferrals(response.data);
       } else {
-        console.error('Received non-JSON response:', response.data);
-        showPopup('Error', 'Received unexpected response from server');
+        console.error('Unexpected response format:', response.data);
+        showPopup('Error', 'Unexpected data format received');
       }
     } catch (err) {
       console.error('Error fetching referrals:', err);

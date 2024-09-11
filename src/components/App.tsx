@@ -16,7 +16,7 @@ import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://97670b720800f5461db54c01fd4c9163.serveo.net';
+const BACKEND_URL = 'https://f6e34b3d33d45de583c886f8a20ae713.serveo.net';
 
 const saveTelegramUser = async (initData: string, startParam: string | undefined | null) => {
   console.log('Attempting to save user data:', initData);
@@ -49,7 +49,9 @@ export const App: FC = () => {
       try {
         console.log('Launch params:', lp);
         console.log('Start param from launch params:', lp.startParam);
-        await saveTelegramUser(lp.initDataRaw, lp.startParam);
+        console.log('Start param from WebApp:', window.Telegram?.WebApp?.initDataUnsafe?.start_param);
+        const startParam = lp.startParam || window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+        await saveTelegramUser(lp.initDataRaw, startParam);
         setIsDataSaved(true);
         console.log('User data saved successfully');
       } catch (error) {
