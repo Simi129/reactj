@@ -23,15 +23,20 @@ import { routes } from '@/navigation/routes.tsx';
 
 const BACKEND_URL = 'https://c529-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
 
+const parseHashParams = () => {
+  const hash = window.location.hash.slice(1);
+  const params = new URLSearchParams(hash);
+  return {
+    tgWebAppStartParam: params.get('tgWebAppStartParam'),
+    // Добавьте здесь другие параметры, если они вам нужны
+  };
+};
+
 const saveTelegramUser = async (initData: string, startParam: string | undefined | null) => {
   console.log('Attempting to save user data:', initData);
   console.log('Start param:', startParam);
   try {
-    const url = `${BACKEND_URL}/users/save-telegram-user`;
-    console.log('Sending request to:', url);
-    console.log('Request payload:', { initData, startParam: startParam || null });
-
-    const response = await axios.post(url, { 
+    const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { 
       initData, 
       startParam: startParam || null 
     }, {
@@ -39,46 +44,11 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
         'Content-Type': 'application/json',
       }
     });
-    
-    console.log('Response received');
     console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-    console.log('Raw response data:', response.data);
-    
-    if (typeof response.data === 'string') {
-      console.log('Response data is a string. First 500 characters:');
-      console.log(response.data.substring(0, 500));
-      if (response.data.startsWith('<!DOCTYPE')) {
-        console.error('Received HTML instead of JSON');
-        throw new Error('Received HTML instead of JSON');
-      }
-    }
-
-    // Попытка распарсить ответ как JSON
-    try {
-      const jsonData = JSON.parse(JSON.stringify(response.data));
-      console.log('Parsed response data:', jsonData);
-      return jsonData;
-    } catch (parseError) {
-      console.error('Failed to parse response as JSON:', parseError);
-      console.log('Raw response data type:', typeof response.data);
-      console.log('Raw response data:', response.data);
-      throw new Error('Invalid JSON response');
-    }
+    console.log('Response data:', response.data);
+    return response.data;
   } catch (error) {
-    console.error('Error in saveTelegramUser:', error);
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status);
-      console.error('Axios error response:', error.response);
-      if (error.response?.data) {
-        console.log('Error response data type:', typeof error.response.data);
-        if (typeof error.response.data === 'string') {
-          console.log('Error response data (first 500 characters):', error.response.data.substring(0, 500));
-        } else {
-          console.log('Error response data:', error.response.data);
-        }
-      }
-    }
+    console.error('Failed to save user data:', error);
     throw error;
   }
 };
@@ -89,21 +59,34 @@ export const App: FC = () => {
   const themeParams = useThemeParams();
   const viewport = useViewport();
   const [isDataSaved, setIsDataSaved] = useState(false);
+  const [hashParams, setHashParams] = useState(parseHashParams());
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setHashParams(parseHashParams());
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const saveUserData = useCallback(async () => {
     if (lp.initDataRaw && !isDataSaved) {
       try {
         console.log('Launch params:', lp);
-        const result = await saveTelegramUser(lp.initDataRaw, lp.startParam);
-        console.log('User data saved result:', result);
+        console.log('Hash params:', hashParams);
+        const startParam = hashParams.tgWebAppStartParam || lp.startParam;
+        await saveTelegramUser(lp.initDataRaw, startParam);
         setIsDataSaved(true);
+        console.log('User data saved successfully');
       } catch (error) {
         console.error('Error saving user data:', error);
       }
     } else if (!lp.initDataRaw) {
       console.warn('initDataRaw is empty or undefined');
     }
-  }, [lp, isDataSaved]);
+  }, [lp, isDataSaved, hashParams]);
 
   useEffect(() => {
     saveUserData();
