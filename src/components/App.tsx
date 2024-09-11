@@ -66,12 +66,13 @@ export const App: FC = () => {
   }, [saveUserData]);
 
   useEffect(() => {
+    console.log('Launch params:', lp);
     if (lp.startParam) {
       console.log('Start parameter detected:', lp.startParam);
     } else {
       console.log('No start parameter detected');
     }
-  }, [lp.startParam]);
+  }, [lp]);
 
   useEffect(() => {
     return bindMiniAppCSSVars(miniApp, themeParams);

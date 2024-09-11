@@ -84,7 +84,7 @@ export const FriendsPage: FC = () => {
     
     if (lp.initData?.user?.id) {
       const userId = lp.initData.user.id;
-      const inviteLink = `https://t.me/${botUsername}?start=invite_${userId}`;
+      const inviteLink = `https://t.me/${botUsername}?startapp=invite_${userId}`;
       console.log('Generated invite link:', inviteLink);
       utils.shareURL(inviteLink, 'Join me in BallCry and get more rewards!');
     } else {
