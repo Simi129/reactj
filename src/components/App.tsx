@@ -27,8 +27,11 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
   console.log('Attempting to save user data:', initData);
   console.log('Start param:', startParam);
   try {
-    console.log('Sending request to:', `${BACKEND_URL}/users/save-telegram-user`);
-    const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { 
+    const url = `${BACKEND_URL}/users/save-telegram-user`;
+    console.log('Sending request to:', url);
+    console.log('Request payload:', { initData, startParam: startParam || null });
+
+    const response = await axios.post(url, { 
       initData, 
       startParam: startParam || null 
     }, {
@@ -42,10 +45,13 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
     console.log('Response headers:', response.headers);
     console.log('Raw response data:', response.data);
     
-    if (typeof response.data === 'string' && response.data.startsWith('<!DOCTYPE')) {
-      console.error('Received HTML instead of JSON:');
-      console.error(response.data.substring(0, 500) + '...'); // Выводим первые 500 символов HTML
-      throw new Error('Received HTML instead of JSON');
+    if (typeof response.data === 'string') {
+      console.log('Response data is a string. First 500 characters:');
+      console.log(response.data.substring(0, 500));
+      if (response.data.startsWith('<!DOCTYPE')) {
+        console.error('Received HTML instead of JSON');
+        throw new Error('Received HTML instead of JSON');
+      }
     }
 
     // Попытка распарсить ответ как JSON
@@ -65,11 +71,11 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
       console.error('Axios error:', error.response?.status);
       console.error('Axios error response:', error.response);
       if (error.response?.data) {
-        if (typeof error.response.data === 'string' && error.response.data.startsWith('<!DOCTYPE')) {
-          console.error('Received HTML in error response:');
-          console.error(error.response.data.substring(0, 500) + '...'); // Выводим первые 500 символов HTML
+        console.log('Error response data type:', typeof error.response.data);
+        if (typeof error.response.data === 'string') {
+          console.log('Error response data (first 500 characters):', error.response.data.substring(0, 500));
         } else {
-          console.log('Raw error response data:', error.response.data);
+          console.log('Error response data:', error.response.data);
         }
       }
     }
