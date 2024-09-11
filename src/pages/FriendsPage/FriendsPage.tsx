@@ -15,14 +15,14 @@ interface Referral {
 
 const utils = initUtils();
 const BACKEND_URL = 'https://ef23-78-84-19-24.ngrok-free.app';
-const BOT_USERNAME = 'testonefornew_bot'; // Замените на имя вашего бота
+const BOT_USERNAME = 'testonefornew_bot';
 
 export const FriendsPage: FC = () => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const lp = useLaunchParams();
-
-  const showPopup = (title: string, message: string) => {
+  
+  const showPopup = useCallback((title: string, message: string) => {
     if (window.Telegram?.WebApp?.showPopup) {
       window.Telegram.WebApp.showPopup({
         title,
@@ -33,45 +33,44 @@ export const FriendsPage: FC = () => {
       console.warn('Telegram WebApp API is not available');
       alert(`${title}: ${message}`);
     }
-  };
+  }, []);
 
   const fetchReferrals = useCallback(async () => {
-  console.log('Fetching referrals...');
-  if (!lp.initData?.user?.id) {
-    console.warn('User ID not available');
-    showPopup('Error', 'User ID not available');
-    setIsLoading(false);
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-    const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`, {
-      headers: {
-        'Content-Type': 'application/json',
-        // Добавьте другие необходимые заголовки
-      }
-    });
-    console.log('Referrals response:', response);
-
-    if (response.headers['content-type'].includes('application/json')) {
-      if (Array.isArray(response.data)) {
-        setReferrals(response.data);
-      } else {
-        console.error('Unexpected response format:', response.data);
-        showPopup('Error', 'Unexpected data format received');
-      }
-    } else {
-      console.error('Received non-JSON response:', response.data);
-      showPopup('Error', 'Received unexpected response from server');
+    console.log('Fetching referrals...');
+    if (!lp.initData?.user?.id) {
+      console.warn('User ID not available');
+      showPopup('Error', 'User ID not available');
+      setIsLoading(false);
+      return;
     }
-  } catch (err) {
-    console.error('Error fetching referrals:', err);
-    showPopup('Error', 'Failed to load referrals. Please try again later.');
-  } finally {
-    setIsLoading(false);
-  }
-}, [lp.initData?.user?.id]);
+
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`${BACKEND_URL}/users/${lp.initData.user.id}/referrals`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      console.log('Referrals response:', response);
+
+      if (response.headers['content-type'].includes('application/json')) {
+        if (Array.isArray(response.data)) {
+          setReferrals(response.data);
+        } else {
+          console.error('Unexpected response format:', response.data);
+          showPopup('Error', 'Unexpected data format received');
+        }
+      } else {
+        console.error('Received non-JSON response:', response.data);
+        showPopup('Error', 'Received unexpected response from server');
+      }
+    } catch (err) {
+      console.error('Error fetching referrals:', err);
+      showPopup('Error', 'Failed to load referrals. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [lp.initData?.user?.id, showPopup]);
 
   useEffect(() => {
     fetchReferrals();
@@ -85,7 +84,7 @@ export const FriendsPage: FC = () => {
     return `https://t.me/${BOT_USERNAME}/testonefornew?startapp=invite_${lp.initData.user.id}`;
   }, [lp.initData?.user?.id]);
 
-  const shareInviteLink = () => {
+  const shareInviteLink = useCallback(() => {
     const inviteLink = generateInviteLink();
     if (inviteLink) {
       console.log('Generated invite link:', inviteLink);
@@ -93,9 +92,9 @@ export const FriendsPage: FC = () => {
     } else {
       showPopup('Error', 'Unable to create invite link. Please try again later.');
     }
-  };
+  }, [generateInviteLink, showPopup]);
 
-  const copyInviteLink = () => {
+  const copyInviteLink = useCallback(() => {
     const inviteLink = generateInviteLink();
     if (inviteLink) {
       navigator.clipboard.writeText(inviteLink)
@@ -108,9 +107,9 @@ export const FriendsPage: FC = () => {
     } else {
       showPopup('Error', 'Unable to create invite link. Please try again later.');
     }
-  };
+  }, [generateInviteLink, showPopup]);
 
-  const renderReferralsList = () => {
+  const renderReferralsList = useCallback(() => {
     if (referrals.length === 0) {
       return <p>No referrals yet. Invite your friends!</p>;
     }
@@ -125,7 +124,7 @@ export const FriendsPage: FC = () => {
         ))}
       </ol>
     );
-  };
+  }, [referrals]);
 
   console.log('Rendering FriendsPage. State:', { isLoading, referralsLength: referrals.length });
 

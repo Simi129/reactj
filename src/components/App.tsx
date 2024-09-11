@@ -11,26 +11,12 @@ import {
 } from '@telegram-apps/sdk-react';
 import { AppRoot } from '@telegram-apps/telegram-ui';
 import { FC, useEffect, useMemo, useState, useCallback } from 'react';
-import {
-  Navigate,
-  Route,
-  Router,
-  Routes,
-} from 'react-router-dom';
+import { Navigate, Route, Router, Routes } from 'react-router-dom';
 import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://ef23-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
-
-const parseHashParams = () => {
-  const hash = window.location.hash.slice(1);
-  const params = new URLSearchParams(hash);
-  return {
-    tgWebAppStartParam: params.get('tgWebAppStartParam'),
-    // Добавьте здесь другие параметры, если они вам нужны
-  };
-};
+const BACKEND_URL = 'https://ef23-78-84-19-24.ngrok-free.app';
 
 const saveTelegramUser = async (initData: string, startParam: string | undefined | null) => {
   console.log('Attempting to save user data:', initData);
@@ -40,9 +26,7 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
       initData, 
       startParam: startParam || null 
     }, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
     console.log('Response status:', response.status);
     console.log('Response data:', response.data);
@@ -59,25 +43,13 @@ export const App: FC = () => {
   const themeParams = useThemeParams();
   const viewport = useViewport();
   const [isDataSaved, setIsDataSaved] = useState(false);
-  const [hashParams, setHashParams] = useState(parseHashParams());
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      setHashParams(parseHashParams());
-    };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
 
   const saveUserData = useCallback(async () => {
     if (lp.initDataRaw && !isDataSaved) {
       try {
         console.log('Launch params:', lp);
-        console.log('Hash params:', hashParams);
-        const startParam = hashParams.tgWebAppStartParam || lp.startParam;
-        await saveTelegramUser(lp.initDataRaw, startParam);
+        console.log('Start param from launch params:', lp.startParam);
+        await saveTelegramUser(lp.initDataRaw, lp.startParam);
         setIsDataSaved(true);
         console.log('User data saved successfully');
       } catch (error) {
@@ -86,7 +58,7 @@ export const App: FC = () => {
     } else if (!lp.initDataRaw) {
       console.warn('initDataRaw is empty or undefined');
     }
-  }, [lp, isDataSaved, hashParams]);
+  }, [lp, isDataSaved]);
 
   useEffect(() => {
     saveUserData();
