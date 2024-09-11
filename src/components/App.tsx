@@ -23,10 +23,14 @@ import { routes } from '@/navigation/routes.tsx';
 
 const BACKEND_URL = 'https://c529-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
 
-const saveTelegramUser = async (initData: string) => {
+const saveTelegramUser = async (initData: string, startParam: string | undefined | null) => {
   console.log('Attempting to save user data:', initData);
+  console.log('Start param:', startParam);
   try {
-    const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { initData });
+    const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { 
+      initData, 
+      startParam: startParam || null 
+    });
     console.log('User data saved successfully:', response.data);
     return response.data;
   } catch (error) {
@@ -45,8 +49,8 @@ export const App: FC = () => {
   const saveUserData = useCallback(async () => {
     if (lp.initDataRaw && !isDataSaved) {
       try {
-        console.log('InitDataRaw received:', lp.initDataRaw);
-        await saveTelegramUser(lp.initDataRaw);
+        console.log('Launch params:', lp);
+        await saveTelegramUser(lp.initDataRaw, lp.startParam);
         setIsDataSaved(true);
         console.log('User data saved successfully');
       } catch (error) {
@@ -55,7 +59,7 @@ export const App: FC = () => {
     } else if (!lp.initDataRaw) {
       console.warn('initDataRaw is empty or undefined');
     }
-  }, [lp.initDataRaw, isDataSaved]);
+  }, [lp, isDataSaved]);
 
   useEffect(() => {
     saveUserData();
