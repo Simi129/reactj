@@ -21,7 +21,7 @@ import axios from 'axios';
 
 import { routes } from '@/navigation/routes.tsx';
 
-const BACKEND_URL = 'https://c529-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
+const BACKEND_URL = 'https://ef23-78-84-19-24.ngrok-free.app'; // Замените на ваш актуальный URL
 
 const parseHashParams = () => {
   const hash = window.location.hash.slice(1);
