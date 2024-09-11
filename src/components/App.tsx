@@ -30,11 +30,40 @@ const saveTelegramUser = async (initData: string, startParam: string | undefined
     const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { 
       initData, 
       startParam: startParam || null 
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
     });
-    console.log('User data saved successfully:', response.data);
-    return response.data;
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    // Попытка распарсить ответ как JSON
+    try {
+      const jsonData = JSON.parse(JSON.stringify(response.data));
+      console.log('Parsed response data:', jsonData);
+      return jsonData;
+    } catch (parseError) {
+      console.error('Failed to parse response as JSON:', parseError);
+      console.log('Raw response data:', response.data);
+      throw new Error('Invalid JSON response');
+    }
   } catch (error) {
-    console.error('Failed to save user data:', error);
+    console.error('Error in saveTelegramUser:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('Axios error:', error.response?.status, error.response?.data);
+      // Попытка распарсить тело ошибки, если оно есть
+      if (error.response?.data) {
+        try {
+          const errorBody = JSON.parse(JSON.stringify(error.response.data));
+          console.log('Parsed error body:', errorBody);
+        } catch (parseError) {
+          console.error('Failed to parse error body:', parseError);
+          console.log('Raw error body:', error.response.data);
+        }
+      }
+    }
     throw error;
   }
 };
@@ -50,9 +79,9 @@ export const App: FC = () => {
     if (lp.initDataRaw && !isDataSaved) {
       try {
         console.log('Launch params:', lp);
-        await saveTelegramUser(lp.initDataRaw, lp.startParam);
+        const result = await saveTelegramUser(lp.initDataRaw, lp.startParam);
+        console.log('User data saved result:', result);
         setIsDataSaved(true);
-        console.log('User data saved successfully');
       } catch (error) {
         console.error('Error saving user data:', error);
       }
@@ -64,15 +93,6 @@ export const App: FC = () => {
   useEffect(() => {
     saveUserData();
   }, [saveUserData]);
-
-  useEffect(() => {
-    console.log('Launch params:', lp);
-    if (lp.startParam) {
-      console.log('Start parameter detected:', lp.startParam);
-    } else {
-      console.log('No start parameter detected');
-    }
-  }, [lp]);
 
   useEffect(() => {
     return bindMiniAppCSSVars(miniApp, themeParams);
