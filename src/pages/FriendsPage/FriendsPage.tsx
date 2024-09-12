@@ -76,7 +76,7 @@ export const FriendsPage: FC = () => {
       console.error('User ID not available');
       return null;
     }
-    return `https://t.me/${BOT_USERNAME}/testonefornew?startapp=invite_${lp.initData.user.id}`;
+    return `https://t.me/${BOT_USERNAME}/testonefornew?start=invite_${lp.initData.user.id}`;
   }, [lp.initData?.user?.id]);
 
   const shareInviteLink = useCallback(() => {
