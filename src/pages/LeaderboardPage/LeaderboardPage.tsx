@@ -8,6 +8,9 @@ interface LeaderboardEntry {
   ballCryBalance: number;
 }
 
+// Укажите здесь базовый URL вашего бэкенда
+const API_BASE_URL = 'https://0d4efd8051a868719e1139ba74644577.serveo.net'; // Замените на реальный URL вашего бэкенда
+
 export const LeaderboardPage: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,10 +19,11 @@ export const LeaderboardPage: React.FC = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get<LeaderboardEntry[]>('/api/leaderboard');
+        const response = await axios.get<LeaderboardEntry[]>(`${API_BASE_URL}/api/leaderboard`);
         setLeaderboard(response.data);
         setLoading(false);
       } catch (err) {
+        console.error('Error fetching leaderboard:', err);
         setError('Ошибка при загрузке данных лидерборда');
         setLoading(false);
       }
