@@ -1,4 +1,4 @@
-import { type FC, useMemo, useEffect } from 'react';
+/*import { type FC, useMemo, useEffect } from 'react';
 import { useInitData, useLaunchParams, type User } from '@telegram-apps/sdk-react';
 import { List, Placeholder } from '@telegram-apps/telegram-ui';
 import axios from 'axios';
@@ -128,4 +128,4 @@ export const InitDataPage: FC = () => {
       {chatRows && <DisplayData header={'Chat'} rows={chatRows}/>}
     </List>
   );
-};
+};*/

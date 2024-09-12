@@ -1,4 +1,4 @@
-import { useLaunchParams } from '@telegram-apps/sdk-react';
+/*import { useLaunchParams } from '@telegram-apps/sdk-react';
 import { List } from '@telegram-apps/telegram-ui';
 import type { FC } from 'react';
 
@@ -22,4 +22,4 @@ export const LaunchParamsPage: FC = () => {
       />
     </List>
   );
-};
+};*/
