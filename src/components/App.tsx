@@ -40,7 +40,6 @@ const saveTelegramUser = async (initData: string, start_param: string | undefine
   }
 };
 
-
 export const App: FC = () => {
   const lp = useLaunchParams();
   const miniApp = useMiniApp();
@@ -56,17 +55,17 @@ export const App: FC = () => {
         console.log('start_param from WebApp:', window.Telegram?.WebApp?.initDataUnsafe?.start_param);
         
         // Пробуем получить параметр startParam
-        const startParam = lp.start_param || window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+        const start_param = lp.start_param || window.Telegram?.WebApp?.initDataUnsafe?.start_param;
 
         // Добавляем лог для проверки, определён ли startParam
-        if (startParam) {
-          console.log('Final startParam used:', startParam);
+        if (start_param) {
+          console.log('Final startParam used:', start_param);
         } else {
           console.warn('No valid startParam found');
         }
 
         // Сохраняем данные пользователя
-        await saveTelegramUser(lp.initDataRaw, startParam);
+        await saveTelegramUser(lp.initDataRaw, start_param);
         setIsDataSaved(true);
         console.log('User data saved successfully');
       } catch (error) {
