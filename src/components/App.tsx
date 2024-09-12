@@ -18,15 +18,15 @@ import { routes } from '@/navigation/routes.tsx';
 
 const BACKEND_URL = 'https://5796d6f7714bae38e075b95d9ce5491a.serveo.net';
 
-const saveTelegramUser = async (initData: string, startParam: string | undefined | null) => {
+const saveTelegramUser = async (initData: string, start_param: string | undefined | null) => {
   console.log('Attempting to save user data:');
   console.log('initData:', initData); // Логируем initData
-  console.log('Start param before sending:', startParam); // Логируем startParam до отправки запроса
+  console.log('start_param before sending:', start_param); // Логируем startParam до отправки запроса
 
   try {
     const response = await axios.post(`${BACKEND_URL}/users/save-telegram-user`, { 
       initData, 
-      startParam: startParam || null 
+      start_param: start_param || null 
     }, {
       headers: { 'Content-Type': 'application/json' }
     });
@@ -52,11 +52,11 @@ export const App: FC = () => {
     if (lp.initDataRaw && !isDataSaved) {
       try {
         console.log('Launch params:', lp);
-        console.log('Start param from launch params:', lp.startParam);
-        console.log('Start param from WebApp:', window.Telegram?.WebApp?.initDataUnsafe?.start_param);
+        console.log('start_param from launch params:', lp.start_param);
+        console.log('start_param from WebApp:', window.Telegram?.WebApp?.initDataUnsafe?.start_param);
         
         // Пробуем получить параметр startParam
-        const startParam = lp.startParam || window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+        const startParam = lp.start_param || window.Telegram?.WebApp?.initDataUnsafe?.start_param;
 
         // Добавляем лог для проверки, определён ли startParam
         if (startParam) {
