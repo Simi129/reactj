@@ -1,8 +1,8 @@
 import type { ComponentType, JSX } from 'react';
 
 import { IndexPage } from '@/pages/IndexPage/IndexPage';
-//import { InitDataPage } from '@/pages/InitDataPage/InitDataPage';
-//import { LaunchParamsPage } from '@/pages/LaunchParamsPage/LaunchParamsPage';
+import { InitDataPage } from '@/pages/InitDataPage/InitDataPage';
+import { LaunchParamsPage } from '@/pages/LaunchParamsPage/LaunchParamsPage';
 import { ThemeParamsPage } from '@/pages/ThemeParamsPage/ThemeParamsPage';
 import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage/LeaderboardPage';
@@ -17,9 +17,9 @@ interface Route {
 
 export const routes: Route[] = [
   { path: '/', Component: IndexPage, title: 'Home' },
- // { path: '/init-data', Component: InitDataPage, title: 'Init Data' },
+  { path: '/init-data', Component: InitDataPage, title: 'Init Data' },
   { path: '/theme-params', Component: ThemeParamsPage, title: 'Theme Params' },
- // { path: '/launch-params', Component: LaunchParamsPage, title: 'Launch Params' },
+  { path: '/launch-params', Component: LaunchParamsPage, title: 'Launch Params' },
   {
     path: '/ton-connect',
     Component: TONConnectPage,
