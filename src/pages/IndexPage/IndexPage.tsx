@@ -4,15 +4,17 @@ import { Link } from '@/components/Link/Link';
 import { useTonWallet } from '@tonconnect/ui-react';
 import { QuestsComponent } from '@/components/QuestsComponent/QuestsComponent';
 import { NavigationBar } from '@/components/NavigationBar/NavigationBar';
+import { useBalance } from '../../contexts/balanceContext'; // Добавьте этот импорт
 
 import ball1 from '../../../assets/ball1.png';
 
 export const IndexPage: FC = () => {
   const wallet = useTonWallet();
+  const { balance } = useBalance(); // Используем хук useBalance
 
   return (
     <div style={{ padding: '20px', textAlign: 'center', paddingBottom: '60px' }}>
-      <h2>BallCry: {/* Здесь должна быть логика подсчета общего количества монет */}</h2>
+      <h2>BallCry: {balance}</h2> {/* Отображаем баланс */}
       
       {wallet ? (
         <div style={{ 
