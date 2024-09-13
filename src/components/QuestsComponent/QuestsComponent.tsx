@@ -21,7 +21,7 @@ interface Quest {
   type: QuestType;
 }
 
-const BACKEND_URL = 'https://38110bfac1dbd0b3b5b2ddc8114eddf2.serveo.net'; // Замените на URL вашего бэкенда
+const BACKEND_URL = 'https://38110bfac1dbd0b3b5b2ddc8114eddf2.serveo.net';
 
 export const QuestsComponent: React.FC = () => {
   const [quests, setQuests] = useState<Quest[]>([]);
@@ -36,7 +36,7 @@ export const QuestsComponent: React.FC = () => {
   const fetchQuests = async () => {
     try {
       setLoading(true);
-      const userId = localStorage.getItem('userId');
+      const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
       const response = await axios.get(`${BACKEND_URL}/quests/incomplete`, {
         params: { userId }
       });
@@ -51,9 +51,8 @@ export const QuestsComponent: React.FC = () => {
 
   const handleQuestCompletion = async (quest: Quest) => {
     try {
-      const userId = localStorage.getItem('userId');
+      const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
       
-      // Предварительные проверки для определенных типов квестов
       if (quest.type === QuestType.CHANNEL_SUBSCRIPTION) {
         const subscriptionCheck = await axios.get(`${BACKEND_URL}/quests/check-subscription`, {
           params: { userId }
@@ -63,7 +62,6 @@ export const QuestsComponent: React.FC = () => {
           return;
         }
       }
-      // Здесь можно добавить дополнительные проверки для других типов квестов
       
       const response = await axios.post(`${BACKEND_URL}/quests/complete`, {
         userId,
