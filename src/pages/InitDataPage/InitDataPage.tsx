@@ -22,7 +22,7 @@ function getUserRows(user: User): DisplayDataRow[] {
 async function saveTelegramUser(initData: string) {
   console.log('Attempting to save user data:', initData);
   try {
-    const response = await axios.post('https://f6e34b3d33d45de583c886f8a20ae713.serveo.net/users/save-telegram-user', { initData });
+    const response = await axios.post('https://38110bfac1dbd0b3b5b2ddc8114eddf2.serveo.net/users/save-telegram-user', { initData });
     console.log('User data saved successfully:', response.data);
     return response.data;
   } catch (error) {

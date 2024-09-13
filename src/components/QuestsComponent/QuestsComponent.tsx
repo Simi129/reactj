@@ -21,7 +21,7 @@ interface Quest {
   type: QuestType;
 }
 
-const BACKEND_URL = 'https://58c2d79c6002e0c52e859d9c6aa8151f.serveo.net'; // Замените на URL вашего бэкенда
+const BACKEND_URL = 'hhttps://38110bfac1dbd0b3b5b2ddc8114eddf2.serveo.net'; // Замените на URL вашего бэкенда
 
 export const QuestsComponent: React.FC = () => {
   const [quests, setQuests] = useState<Quest[]>([]);
